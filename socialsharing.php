@@ -24,7 +24,7 @@
 *  International Registered Trademark & Property of PrestaShop SA
 */
 
-if (!defined('_PS_VERSION_'))
+if (!defined('_TB_VERSION_'))
 	exit;
 
 class SocialSharing extends Module
@@ -35,10 +35,10 @@ class SocialSharing extends Module
 	public function __construct()
 	{
 		$this->name = 'socialsharing';
-		$this->author = 'PrestaShop';
+		$this->author = 'thirty bees';
 		$this->tab = 'advertising_marketing';
 		$this->need_instance = 0;
-		$this->version = '1.4.3';
+		$this->version = '2.0.0';
 		$this->bootstrap = true;
 		$this->_directory = dirname(__FILE__);
 
