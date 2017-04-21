@@ -32,12 +32,12 @@ $(document).ready(function(){
 			{
 				case 'twitter':
 					window.open('https://twitter.com/intent/tweet?text=' + sharing_name + ' ' + encodeURIComponent(sharing_url), 'sharertwt', 'toolbar=0,status=0,width=640,height=445');
-                                        ga('send', 'social', 'Twitter', 'share', ' + sharing_url + ');
+                                        ga('send', 'social', 'Twitter', 'share', sharing_name);
 
 					break;
 				case 'facebook':
 					window.open('http://www.facebook.com/sharer.php?u=' + sharing_url, 'sharer', 'toolbar=0,status=0,width=660,height=445');
-                                        ga('send', 'social', 'Facebook', 'share', ' + sharing_url +');
+                                        ga('send', 'social', 'Facebook', 'share', sharing_name);
 
 					break;
 				case 'google-plus':
@@ -50,7 +50,7 @@ $(document).ready(function(){
 						img_url = $("#bigpic").attr('src');
 					}
 					window.open('http://www.pinterest.com/pin/create/button/?media=' + img_url + '&url=' + sharing_url, 'sharerpinterest', 'toolbar=0,status=0,width=660,height=445');
-                                        ga('send', 'social', 'Pinterest', 'share', ' + sharing_url +');
+                                        ga('send', 'social', 'Pinterest', 'share', sharingname);
 					break;
 			}
 		}
