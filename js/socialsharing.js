@@ -50,7 +50,7 @@ $(document).ready(function(){
 						img_url = $("#bigpic").attr('src');
 					}
 					window.open('http://www.pinterest.com/pin/create/button/?media=' + img_url + '&url=' + sharing_url, 'sharerpinterest', 'toolbar=0,status=0,width=660,height=445');
-                                        ga('send', 'social', 'Pinterest', 'share', sharingname);
+                                        ga('send', 'social', 'Pinterest', 'share', sharing_name);
 					break;
 			}
 		}
