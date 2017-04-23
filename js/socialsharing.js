@@ -36,7 +36,7 @@ $(document).ready(function () {
 
           break;
         case 'facebook':
-          window.open('http://www.facebook.com/sharer.php?u=' + sharing_url, 'sharer', 'toolbar=0,status=0,width=660,height=445');
+          window.open('https://www.facebook.com/sharer.php?u=' + sharing_url, 'sharer', 'toolbar=0,status=0,width=660,height=445');
           if (typeof window.ga === 'function') {
             window.ga('send', 'social', 'Facebook', 'share', sharing_name);
           }
@@ -52,7 +52,7 @@ $(document).ready(function () {
           if (typeof $bigpic.attr('src') !== 'undefined' && $bigpic.attr('src') !== '') {
             img_url = $bigpic.attr('src');
           }
-          window.open('http://www.pinterest.com/pin/create/button/?media=' + img_url + '&url=' + sharing_url, 'sharerpinterest', 'toolbar=0,status=0,width=660,height=445');
+          window.open('https://www.pinterest.com/pin/create/button/?media=' + img_url + '&url=' + sharing_url, 'sharerpinterest', 'toolbar=0,status=0,width=660,height=445');
           if (typeof window.ga === 'function') {
             ga('send', 'social', 'Pinterest', 'share', sharing_name);
           }
