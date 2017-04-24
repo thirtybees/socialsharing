@@ -23,41 +23,53 @@
  *  International Registered Trademark & Property of PrestaShop SA
  */
 
-$(document).ready(function () {
-  $('button.social-sharing').on('click', function () {
-    type = $(this).attr('data-type');
-    if (type.length) {
-      switch (type) {
-        case 'twitter':
-          window.open('https://twitter.com/intent/tweet?text=' + sharing_name + ' ' + encodeURIComponent(sharing_url), 'sharertwt', 'toolbar=0,status=0,width=640,height=445');
-          if (typeof window.ga === 'function') {
-            window.ga('send', 'social', 'Twitter', 'share', sharing_name);
-          }
+(function () {
+  function initSocialSharing() {
+    if (typeof $ === 'undefined') {
+      setTimeout(initSocialSharing, 100);
 
-          break;
-        case 'facebook':
-          window.open('https://www.facebook.com/sharer.php?u=' + sharing_url, 'sharer', 'toolbar=0,status=0,width=660,height=445');
-          if (typeof window.ga === 'function') {
-            window.ga('send', 'social', 'Facebook', 'share', sharing_name);
-          }
-
-          break;
-        case 'google-plus':
-          window.open('https://plus.google.com/share?url=' + sharing_url, 'sharer', 'toolbar=0,status=0,width=660,height=445');
-          // GA doesn't need to be added as GA will automatically track G+ social interactions
-          break;
-        case 'pinterest':
-          var img_url = sharing_img;
-          var $bigpic = $('#bigpic');
-          if (typeof $bigpic.attr('src') !== 'undefined' && $bigpic.attr('src') !== '') {
-            img_url = $bigpic.attr('src');
-          }
-          window.open('https://www.pinterest.com/pin/create/button/?media=' + img_url + '&url=' + sharing_url, 'sharerpinterest', 'toolbar=0,status=0,width=660,height=445');
-          if (typeof window.ga === 'function') {
-            ga('send', 'social', 'Pinterest', 'share', sharing_name);
-          }
-          break;
-      }
+      return;
     }
-  });
-});
+
+    $(document).ready(function () {
+      $('button.social-sharing').on('click', function () {
+        type = $(this).attr('data-type');
+        if (type.length) {
+          switch (type) {
+            case 'twitter':
+              window.open('https://twitter.com/intent/tweet?text=' + sharing_name + ' ' + encodeURIComponent(sharing_url), 'sharertwt', 'toolbar=0,status=0,width=640,height=445');
+              if (typeof window.ga === 'function') {
+                window.ga('send', 'social', 'Twitter', 'share', sharing_name);
+              }
+
+              break;
+            case 'facebook':
+              window.open('https://www.facebook.com/sharer.php?u=' + sharing_url, 'sharer', 'toolbar=0,status=0,width=660,height=445');
+              if (typeof window.ga === 'function') {
+                window.ga('send', 'social', 'Facebook', 'share', sharing_name);
+              }
+
+              break;
+            case 'google-plus':
+              window.open('https://plus.google.com/share?url=' + sharing_url, 'sharer', 'toolbar=0,status=0,width=660,height=445');
+              // GA doesn't need to be added as GA will automatically track G+ social interactions
+              break;
+            case 'pinterest':
+              var img_url = sharing_img;
+              var $bigpic = $('#bigpic');
+              if (typeof $bigpic.attr('src') !== 'undefined' && $bigpic.attr('src') !== '') {
+                img_url = $bigpic.attr('src');
+              }
+              window.open('https://www.pinterest.com/pin/create/button/?media=' + img_url + '&url=' + sharing_url, 'sharerpinterest', 'toolbar=0,status=0,width=660,height=445');
+              if (typeof window.ga === 'function') {
+                ga('send', 'social', 'Pinterest', 'share', sharing_name);
+              }
+              break;
+          }
+        }
+      });
+    });
+  }
+
+  initSocialSharing();
+}());
