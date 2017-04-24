@@ -38,7 +38,7 @@ class SocialSharing extends Module
 		$this->author = 'thirty bees';
 		$this->tab = 'advertising_marketing';
 		$this->need_instance = 0;
-		$this->version = '2.0.0';
+		$this->version = '2.0.1';
 		$this->bootstrap = true;
 		$this->_directory = dirname(__FILE__);
 
