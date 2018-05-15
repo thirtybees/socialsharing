@@ -51,7 +51,7 @@ class SocialSharing extends Module
 
         parent::__construct();
 
-        $this->displayName = $this->l('Social sharing');
+        $this->displayName = $this->l('Block Social Sharing');
         $this->description = $this->l('Displays social sharing buttons (Twitter, Facebook, Google+ and Pinterest) on every product page.');
         $this->ps_versions_compliancy = ['min' => '1.6', 'max' => '1.6.99.99'];
     }
