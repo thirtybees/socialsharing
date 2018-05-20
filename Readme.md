@@ -1,9 +1,0 @@
-# Social sharing
-
-## About
-
-Displays social sharing buttons (Twitter, Facebook, Google+ and Pinterest) on every product page.
-
-## Contributing
-
-thirty bees modules are open-source extensions to the thirty bees e-commerce solution. Everyone is welcome and even encouraged to contribute with their own improvements.
