@@ -198,7 +198,11 @@ class SocialSharing extends Module
                 return '';
             }
             if (!$this->isCached('socialsharing_header.tpl', $this->getCacheId('socialsharing_header|'.(isset($product->id) && $product->id ? (int) $product->id : '')))) {
-                $decimals = Configuration::get('PS_PRICE_DISPLAY_PRECISION');
+                $decimals = 0;
+                if ($this->context->currency->decimals) {
+                    $decimals = Configuration::get('PS_PRICE_DISPLAY_PRECISION');
+                }
+
                 $this->context->smarty->assign(
                     [
                         'price'        => Tools::ps_round($product->getPrice(!Product::getTaxCalculationMethod((int) $this->context->cookie->id_customer), null), $decimals),
