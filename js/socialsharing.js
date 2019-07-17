@@ -49,10 +49,6 @@
               }
 
               break;
-            case 'google-plus':
-              window.open('https://plus.google.com/share?url=' + sharing_url, 'sharer', 'toolbar=0,status=0,width=660,height=445');
-              // GA doesn't need to be added as GA will automatically track G+ social interactions
-              break;
             case 'pinterest':
               var img_url = sharing_img;
               var $bigpic = $('#bigpic');
