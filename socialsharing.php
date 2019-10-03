@@ -238,7 +238,7 @@ class SocialSharing extends Module
                     "'"
                 ),
                 'sharing_img'  => addcslashes(
-                    _PS_IMG_DIR_.Configuration::get('PS_LOGO_MAIL', null, null, $this->context->shop->id), "'"
+                    $this->context->link->getMediaLink(_PS_IMG_.Configuration::get('PS_LOGO')), "'"
                 ),
             ]
         );
