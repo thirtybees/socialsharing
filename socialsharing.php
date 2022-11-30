@@ -46,7 +46,6 @@ class SocialSharing extends Module
         $this->need_instance = 0;
         $this->version = '2.1.3';
         $this->bootstrap = true;
-        $this->_directory = dirname(__FILE__);
 
         parent::__construct();
 
