@@ -57,7 +57,7 @@ class SocialSharing extends Module
         $this->author = 'thirty bees';
         $this->tab = 'advertising_marketing';
         $this->need_instance = 0;
-        $this->version = '2.1.3';
+        $this->version = '2.2.0';
         $this->bootstrap = true;
 
         parent::__construct();
