@@ -32,7 +32,8 @@ if (!defined('_TB_VERSION_')) {
  */
 class SocialSharing extends Module
 {
-    const PRODUCT_IMAGE_TYPE_CONFIG_KEY = 'PS_SC_PRODUCT_IMAGE_TYPE';
+    const CONFIG_KEY_DISPLAY_OPEN_GRAPH_TAGS = 'PS_SC_DISPLAY_OPEN_GRAPH_TAGS';
+    const CONFIG_KEY_PRODUCT_IMAGE_TYPE = 'PS_SC_PRODUCT_IMAGE_TYPE';
 
     /**
      * @var string[]
@@ -128,7 +129,8 @@ class SocialSharing extends Module
     public function getContent()
     {
         if (Tools::isSubmit('submitSocialSharing')) {
-            Configuration::updateValue(static::PRODUCT_IMAGE_TYPE_CONFIG_KEY, Tools::getValue(static::PRODUCT_IMAGE_TYPE_CONFIG_KEY));
+            Configuration::updateValue(static::CONFIG_KEY_PRODUCT_IMAGE_TYPE, Tools::getValue(static::CONFIG_KEY_PRODUCT_IMAGE_TYPE));
+            Configuration::updateValue(static::CONFIG_KEY_DISPLAY_OPEN_GRAPH_TAGS, (int)Tools::getValue(static::CONFIG_KEY_DISPLAY_OPEN_GRAPH_TAGS));
             foreach (self::$networks as $network) {
                 Configuration::updateValue('PS_SC_' . strtoupper($network), (int)Tools::getValue('PS_SC_' . strtoupper($network)));
             }
@@ -188,9 +190,26 @@ class SocialSharing extends Module
                 ],
                 'input' => [
                     [
+                        'type' => 'switch',
+                        'label' => $this->l('Include Open Graph tags in page header'),
+                        'name' => static::CONFIG_KEY_DISPLAY_OPEN_GRAPH_TAGS,
+                        'values' => [
+                            [
+                                'id' => static::CONFIG_KEY_DISPLAY_OPEN_GRAPH_TAGS . '_on',
+                                'value' => 1,
+                                'label' => $this->l('Enabled'),
+                            ],
+                            [
+                                'id' => static::CONFIG_KEY_DISPLAY_OPEN_GRAPH_TAGS . '_off',
+                                'value' => 0,
+                                'label' => $this->l('Disabled'),
+                            ],
+                        ],
+                    ],
+                    [
                         'type' => 'select',
                         'label' => $this->l('Product image type'),
-                        'name' => static::PRODUCT_IMAGE_TYPE_CONFIG_KEY,
+                        'name' => static::CONFIG_KEY_PRODUCT_IMAGE_TYPE,
                         'options' => array(
                             'query' => ImageType::getImagesTypes('products', true),
                             'id' => 'name',
@@ -216,7 +235,8 @@ class SocialSharing extends Module
     public function getConfigFieldsValues()
     {
         $values = [
-            static::PRODUCT_IMAGE_TYPE_CONFIG_KEY => $this->getSelectedProductImageType()
+            static::CONFIG_KEY_PRODUCT_IMAGE_TYPE => $this->getSelectedProductImageType(),
+            static::CONFIG_KEY_DISPLAY_OPEN_GRAPH_TAGS => $this->shouldDisplayOpenGraphTags(),
         ];
 
         foreach (self::$networks as $network) {
@@ -245,33 +265,37 @@ class SocialSharing extends Module
         $this->context->controller->addCss($this->_path . 'css/socialsharing.css');
         $this->context->controller->addJS($this->_path . 'js/socialsharing.js');
 
-        if ($this->context->controller->php_self == 'product' && method_exists($this->context->controller, 'getProduct')) {
-            $product = $this->context->controller->getProduct();
+        if ($this->shouldDisplayOpenGraphTags()) {
+            if ($this->context->controller->php_self == 'product' && method_exists($this->context->controller, 'getProduct')) {
+                $product = $this->context->controller->getProduct();
 
-            if (!Validate::isLoadedObject($product)) {
-                return '';
-            }
-            if (!$this->isCached('socialsharing_header.tpl', $this->getCacheId('socialsharing_header|' . (isset($product->id) && $product->id ? (int)$product->id : '')))) {
-                $decimals = 0;
-                if ($this->context->currency->decimals) {
-                    $decimals = Configuration::get('PS_PRICE_DISPLAY_PRECISION');
+                if (!Validate::isLoadedObject($product)) {
+                    return '';
                 }
+                if (!$this->isCached('socialsharing_header.tpl', $this->getCacheId('socialsharing_header|' . (isset($product->id) && $product->id ? (int)$product->id : '')))) {
+                    $decimals = 0;
+                    if ($this->context->currency->decimals) {
+                        $decimals = Configuration::get('PS_PRICE_DISPLAY_PRECISION');
+                    }
 
-                $this->context->smarty->assign(
-                    [
-                        'price' => Tools::ps_round($product->getPrice(!Product::getTaxCalculationMethod((int)$this->context->cookie->id_customer), null), $decimals),
-                        'pretax_price' => Tools::ps_round($product->getPrice(false, null), $decimals),
-                        'weight' => $product->weight,
-                        'weight_unit' => Configuration::get('PS_WEIGHT_UNIT'),
-                        'cover' => isset($product->id) ? Product::getCover((int)$product->id) : '',
-                        'coverImageType' => $this->getSelectedProductImageType(),
-                        'link_rewrite' => isset($product->link_rewrite) && $product->link_rewrite ? $product->link_rewrite : '',
-                    ]
-                );
+                    $this->context->smarty->assign(
+                        [
+                            'price' => Tools::ps_round($product->getPrice(!Product::getTaxCalculationMethod((int)$this->context->cookie->id_customer), null), $decimals),
+                            'pretax_price' => Tools::ps_round($product->getPrice(false, null), $decimals),
+                            'weight' => $product->weight,
+                            'weight_unit' => Configuration::get('PS_WEIGHT_UNIT'),
+                            'cover' => isset($product->id) ? Product::getCover((int)$product->id) : '',
+                            'coverImageType' => $this->getSelectedProductImageType(),
+                            'link_rewrite' => isset($product->link_rewrite) && $product->link_rewrite ? $product->link_rewrite : '',
+                        ]
+                    );
+                }
             }
-        }
 
-        return $this->display(__FILE__, 'socialsharing_header.tpl', $this->getCacheId('socialsharing_header|' . (isset($product->id) && $product->id ? (int)$product->id : '')));
+            return $this->display(__FILE__, 'socialsharing_header.tpl', $this->getCacheId('socialsharing_header|' . (isset($product->id) && $product->id ? (int)$product->id : '')));
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -463,11 +487,27 @@ class SocialSharing extends Module
             $imageTypes[] = $imageType['name'];
         }
 
-        $value = Configuration::get(static::PRODUCT_IMAGE_TYPE_CONFIG_KEY);
+        $value = Configuration::get(static::CONFIG_KEY_PRODUCT_IMAGE_TYPE);
         if (!$value || !in_array($value, $imageTypes)) {
             $value = array_shift($imageTypes);
-            Configuration::updateValue(static::PRODUCT_IMAGE_TYPE_CONFIG_KEY, $value);
+            Configuration::updateValue(static::CONFIG_KEY_PRODUCT_IMAGE_TYPE, $value);
         }
         return $value;
+    }
+
+    /**
+     * Returns true, if open graph tags should be displayed in page header
+     *
+     * @return bool
+     * @throws PrestaShopException
+     */
+    public function shouldDisplayOpenGraphTags()
+    {
+        $value = Configuration::get(static::CONFIG_KEY_DISPLAY_OPEN_GRAPH_TAGS);
+        if ($value === false) {
+            $value = 1;
+            Configuration::updateValue(static::CONFIG_KEY_DISPLAY_OPEN_GRAPH_TAGS, $value);
+        }
+        return (bool)$value;
     }
 }
