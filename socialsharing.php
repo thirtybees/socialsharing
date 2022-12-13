@@ -32,11 +32,21 @@ if (!defined('_TB_VERSION_')) {
  */
 class SocialSharing extends Module
 {
+    /**
+     * @var string[]
+     */
     protected static $networks = ['Facebook', 'Twitter', 'Pinterest'];
+
+    /**
+     * @var string
+     */
     protected $html = '';
 
     /**
      * SocialSharing constructor.
+     *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function __construct()
     {
@@ -61,6 +71,8 @@ class SocialSharing extends Module
      *
      * @return bool Indicates whether this module has been succesfully installed
      *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      * @since 1.0.0
      */
     public function install()
@@ -106,41 +118,44 @@ class SocialSharing extends Module
      *
      * @return string Config page HTML
      *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws SmartyException
      * @since 1.0.0
      */
     public function getContent()
     {
         if (Tools::isSubmit('submitSocialSharing')) {
             foreach (self::$networks as $network) {
-                Configuration::updateValue('PS_SC_'.Tools::strtoupper($network), (int) Tools::getValue('PS_SC_'.Tools::strtoupper($network)));
+                Configuration::updateValue('PS_SC_' . Tools::strtoupper($network), (int)Tools::getValue('PS_SC_' . Tools::strtoupper($network)));
             }
             $this->html .= $this->displayConfirmation($this->l('Settings updated'));
             Tools::clearCache(Context::getContext()->smarty, $this->getTemplatePath('socialsharing.tpl'));
             Tools::clearCache(Context::getContext()->smarty, $this->getTemplatePath('socialsharing_compare.tpl'));
-            Tools::redirectAdmin($this->context->link->getAdminLink('AdminModules', true).'&conf=6&configure='.$this->name.'&tab_module='.$this->tab.'&module_name='.$this->name);
+            Tools::redirectAdmin($this->context->link->getAdminLink('AdminModules', true) . '&conf=6&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name);
 
         }
 
         $helper = new HelperForm();
         $helper->submit_action = 'submitSocialSharing';
-        $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false).'&configure='.$this->name.'&tab_module='.$this->tab.'&module_name='.$this->name;
+        $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false) . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name;
         $helper->token = Tools::getAdminTokenLite('AdminModules');
         $helper->tpl_vars = ['fields_value' => $this->getConfigFieldsValues()];
 
         $fields = [];
         foreach (self::$networks as $network) {
             $fields[] = [
-                'type'   => 'switch',
-                'label'  => $network,
-                'name'   => 'PS_SC_'.Tools::strtoupper($network),
+                'type' => 'switch',
+                'label' => $network,
+                'name' => 'PS_SC_' . Tools::strtoupper($network),
                 'values' => [
                     [
-                        'id'    => Tools::strtolower($network).'_active_on',
+                        'id' => Tools::strtolower($network) . '_active_on',
                         'value' => 1,
                         'label' => $this->l('Enabled'),
                     ],
                     [
-                        'id'    => Tools::strtolower($network).'_active_off',
+                        'id' => Tools::strtolower($network) . '_active_off',
                         'value' => 0,
                         'label' => $this->l('Disabled'),
                     ],
@@ -148,14 +163,14 @@ class SocialSharing extends Module
             ];
         }
 
-        return $this->html.$helper->generateForm([
+        return $this->html . $helper->generateForm([
                 [
                     'form' => [
                         'legend' => [
                             'title' => $this->displayName,
-                            'icon'  => 'icon-share',
+                            'icon' => 'icon-share',
                         ],
-                        'input'  => $fields,
+                        'input' => $fields,
                         'submit' => [
                             'title' => $this->l('Save'),
                         ],
@@ -164,11 +179,15 @@ class SocialSharing extends Module
             ]);
     }
 
+    /**
+     * @return array
+     * @throws PrestaShopException
+     */
     public function getConfigFieldsValues()
     {
         $values = [];
         foreach (self::$networks as $network) {
-            $values['PS_SC_'.Tools::strtoupper($network)] = (int) Tools::getValue('PS_SC_'.Tools::strtoupper($network), Configuration::get('PS_SC_'.Tools::strtoupper($network)));
+            $values['PS_SC_' . Tools::strtoupper($network)] = (int)Tools::getValue('PS_SC_' . Tools::strtoupper($network), Configuration::get('PS_SC_' . Tools::strtoupper($network)));
         }
 
         return $values;
@@ -180,6 +199,9 @@ class SocialSharing extends Module
      * @param array $params Hook params
      *
      * @return string
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws SmartyException
      */
     public function hookDisplayHeader($params)
     {
@@ -187,8 +209,8 @@ class SocialSharing extends Module
             return '';
         }
 
-        $this->context->controller->addCss($this->_path.'css/socialsharing.css');
-        $this->context->controller->addJS($this->_path.'js/socialsharing.js');
+        $this->context->controller->addCss($this->_path . 'css/socialsharing.css');
+        $this->context->controller->addJS($this->_path . 'js/socialsharing.js');
 
         if ($this->context->controller->php_self == 'product') {
             $product = $this->context->controller->getProduct();
@@ -196,7 +218,7 @@ class SocialSharing extends Module
             if (!Validate::isLoadedObject($product)) {
                 return '';
             }
-            if (!$this->isCached('socialsharing_header.tpl', $this->getCacheId('socialsharing_header|'.(isset($product->id) && $product->id ? (int) $product->id : '')))) {
+            if (!$this->isCached('socialsharing_header.tpl', $this->getCacheId('socialsharing_header|' . (isset($product->id) && $product->id ? (int)$product->id : '')))) {
                 $decimals = 0;
                 if ($this->context->currency->decimals) {
                     $decimals = Configuration::get('PS_PRICE_DISPLAY_PRECISION');
@@ -204,18 +226,18 @@ class SocialSharing extends Module
 
                 $this->context->smarty->assign(
                     [
-                        'price'        => Tools::ps_round($product->getPrice(!Product::getTaxCalculationMethod((int) $this->context->cookie->id_customer), null), $decimals),
+                        'price' => Tools::ps_round($product->getPrice(!Product::getTaxCalculationMethod((int)$this->context->cookie->id_customer), null), $decimals),
                         'pretax_price' => Tools::ps_round($product->getPrice(false, null), $decimals),
-                        'weight'       => $product->weight,
-                        'weight_unit'  => Configuration::get('PS_WEIGHT_UNIT'),
-                        'cover'        => isset($product->id) ? Product::getCover((int) $product->id) : '',
+                        'weight' => $product->weight,
+                        'weight_unit' => Configuration::get('PS_WEIGHT_UNIT'),
+                        'cover' => isset($product->id) ? Product::getCover((int)$product->id) : '',
                         'link_rewrite' => isset($product->link_rewrite) && $product->link_rewrite ? $product->link_rewrite : '',
                     ]
                 );
             }
         }
 
-        return $this->display(__FILE__, 'socialsharing_header.tpl', $this->getCacheId('socialsharing_header|'.(isset($product->id) && $product->id ? (int) $product->id : '')));
+        return $this->display(__FILE__, 'socialsharing_header.tpl', $this->getCacheId('socialsharing_header|' . (isset($product->id) && $product->id ? (int)$product->id : '')));
     }
 
     /**
@@ -224,21 +246,24 @@ class SocialSharing extends Module
      * @param array $params Hook params
      *
      * @return string
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws SmartyException
      */
     public function hookDisplayCompareExtraInformation($params)
     {
         Media::addJsDef(
             [
                 'sharing_name' => addcslashes($this->l('Product comparison'), "'"),
-                'sharing_url'  => addcslashes(
+                'sharing_url' => addcslashes(
                     $this->context->link->getPageLink(
                         'products-comparison', null, $this->context->language->id,
                         ['compare_product_list' => Tools::getValue('compare_product_list')]
                     ),
                     "'"
                 ),
-                'sharing_img'  => addcslashes(
-                    $this->context->link->getMediaLink(_PS_IMG_.Configuration::get('PS_LOGO')), "'"
+                'sharing_img' => addcslashes(
+                    $this->context->link->getMediaLink(_PS_IMG_ . Configuration::get('PS_LOGO')), "'"
                 ),
             ]
         );
@@ -246,8 +271,8 @@ class SocialSharing extends Module
         if (!$this->isCached('socialsharing_compare.tpl', $this->getCacheId('socialsharing_compare'))) {
             $this->context->smarty->assign(
                 [
-                    'PS_SC_TWITTER'   => Configuration::get('PS_SC_TWITTER'),
-                    'PS_SC_FACEBOOK'  => Configuration::get('PS_SC_FACEBOOK'),
+                    'PS_SC_TWITTER' => Configuration::get('PS_SC_TWITTER'),
+                    'PS_SC_FACEBOOK' => Configuration::get('PS_SC_FACEBOOK'),
                     'PS_SC_PINTEREST' => Configuration::get('PS_SC_PINTEREST'),
                 ]
             );
@@ -261,7 +286,10 @@ class SocialSharing extends Module
      *
      * @param array $params
      *
-     * @return string|void
+     * @return string
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws SmartyException
      */
     public function hookDisplayRightColumnProduct($params)
     {
@@ -272,6 +300,9 @@ class SocialSharing extends Module
      * Display social sharing HTML
      *
      * @return string
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws SmartyException
      */
     public function hookDisplaySocialSharing()
     {
@@ -284,7 +315,7 @@ class SocialSharing extends Module
         if (isset($product) && Validate::isLoadedObject($product)) {
             $imageCoverId = $product->getCover($product->id);
             if (is_array($imageCoverId) && isset($imageCoverId['id_image'])) {
-                $imageCoverId = (int) $imageCoverId['id_image'];
+                $imageCoverId = (int)$imageCoverId['id_image'];
             } else {
                 $imageCoverId = 0;
             }
@@ -292,30 +323,33 @@ class SocialSharing extends Module
             Media::addJsDef(
                 [
                     'sharing_name' => addcslashes($product->name, "'"),
-                    'sharing_url'  => addcslashes($this->context->link->getProductLink($product), "'"),
-                    'sharing_img'  => addcslashes($this->context->link->getImageLink($product->link_rewrite, $imageCoverId), "'"),
+                    'sharing_url' => addcslashes($this->context->link->getProductLink($product), "'"),
+                    'sharing_img' => addcslashes($this->context->link->getImageLink($product->link_rewrite, $imageCoverId), "'"),
                 ]
             );
         }
 
-        if (!$this->isCached('socialsharing.tpl', $this->getCacheId('socialsharing|'.(isset($product->id) && $product->id ? (int) $product->id : '')))) {
+        if (!$this->isCached('socialsharing.tpl', $this->getCacheId('socialsharing|' . (isset($product->id) && $product->id ? (int)$product->id : '')))) {
             $this->context->smarty->assign(
                 [
-                    'product'         => isset($product) ? $product : '',
-                    'PS_SC_TWITTER'   => Configuration::get('PS_SC_TWITTER'),
-                    'PS_SC_FACEBOOK'  => Configuration::get('PS_SC_FACEBOOK'),
+                    'product' => isset($product) ? $product : '',
+                    'PS_SC_TWITTER' => Configuration::get('PS_SC_TWITTER'),
+                    'PS_SC_FACEBOOK' => Configuration::get('PS_SC_FACEBOOK'),
                     'PS_SC_PINTEREST' => Configuration::get('PS_SC_PINTEREST'),
                 ]
             );
         }
 
-        return $this->display(__FILE__, 'socialsharing.tpl', $this->getCacheId('socialsharing|'.(isset($product->id) && $product->id ? (int) $product->id : '')));
+        return $this->display(__FILE__, 'socialsharing.tpl', $this->getCacheId('socialsharing|' . (isset($product->id) && $product->id ? (int)$product->id : '')));
     }
 
     /**
      * @param array $params
      *
      * @return string
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws SmartyException
      */
     public function hookExtraleft($params)
     {
@@ -326,6 +360,9 @@ class SocialSharing extends Module
      * @param array $params
      *
      * @return string
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws SmartyException
      */
     public function hookProductActions($params)
     {
@@ -336,6 +373,9 @@ class SocialSharing extends Module
      * @param array $params
      *
      * @return string
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws SmartyException
      */
     public function hookProductFooter($params)
     {
@@ -346,6 +386,7 @@ class SocialSharing extends Module
      * @param array $params
      *
      * @return false|int
+     * @throws PrestaShopException
      */
     public function hookActionObjectProductUpdateAfter($params)
     {
@@ -356,16 +397,18 @@ class SocialSharing extends Module
      * @param int $idProduct
      *
      * @return false|int
+     * @throws PrestaShopException
      */
     protected function clearProductHeaderCache($idProduct)
     {
-        return $this->_clearCache('socialsharing_header.tpl', 'socialsharing_header|'.(int) $idProduct);
+        return $this->_clearCache('socialsharing_header.tpl', 'socialsharing_header|' . (int)$idProduct);
     }
 
     /**
      * @param array $params
      *
      * @return false|int
+     * @throws PrestaShopException
      */
     public function hookActionObjectProductDeleteAfter($params)
     {
