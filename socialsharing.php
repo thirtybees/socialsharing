@@ -32,6 +32,8 @@ if (!defined('_TB_VERSION_')) {
  */
 class SocialSharing extends Module
 {
+    const PRODUCT_IMAGE_TYPE_CONFIG_KEY = 'PS_SC_PRODUCT_IMAGE_TYPE';
+
     /**
      * @var string[]
      */
@@ -126,6 +128,7 @@ class SocialSharing extends Module
     public function getContent()
     {
         if (Tools::isSubmit('submitSocialSharing')) {
+            Configuration::updateValue(static::PRODUCT_IMAGE_TYPE_CONFIG_KEY, Tools::getValue(static::PRODUCT_IMAGE_TYPE_CONFIG_KEY));
             foreach (self::$networks as $network) {
                 Configuration::updateValue('PS_SC_' . strtoupper($network), (int)Tools::getValue('PS_SC_' . strtoupper($network)));
             }
@@ -163,20 +166,47 @@ class SocialSharing extends Module
             ];
         }
 
-        return $this->html . $helper->generateForm([
-                [
-                    'form' => [
-                        'legend' => [
-                            'title' => $this->displayName,
-                            'icon' => 'icon-share',
-                        ],
-                        'input' => $fields,
-                        'submit' => [
-                            'title' => $this->l('Save'),
-                        ],
-                    ],
+
+        $networkForm = [
+            'form' => [
+                'legend' => [
+                    'title' => $this->l('Configure networks'),
+                    'icon' => 'icon-share',
                 ],
-            ]);
+                'input' => $fields,
+                'submit' => [
+                    'title' => $this->l('Save'),
+                ],
+            ],
+        ];
+
+        $configForm = [
+            'form' => [
+                'legend' => [
+                    'title' => $this->l('Sharing settings'),
+                    'icon' => 'icon-cogs',
+                ],
+                'input' => [
+                    [
+                        'type' => 'select',
+                        'label' => $this->l('Product image type'),
+                        'name' => static::PRODUCT_IMAGE_TYPE_CONFIG_KEY,
+                        'options' => array(
+                            'query' => ImageType::getImagesTypes('products', true),
+                            'id' => 'name',
+                            'name' => 'name'
+                        ),
+                        'desc' => $this->l('Select image type you want to use for product sharing'),
+                        'required' => true
+                    ]
+                ],
+                'submit' => [
+                    'title' => $this->l('Save'),
+                ],
+            ],
+        ];
+
+        return $this->html . $helper->generateForm([$networkForm, $configForm]);
     }
 
     /**
@@ -185,7 +215,10 @@ class SocialSharing extends Module
      */
     public function getConfigFieldsValues()
     {
-        $values = [];
+        $values = [
+            static::PRODUCT_IMAGE_TYPE_CONFIG_KEY => $this->getSelectedProductImageType()
+        ];
+
         foreach (self::$networks as $network) {
             $values['PS_SC_' . strtoupper($network)] = (int)Tools::getValue('PS_SC_' . strtoupper($network), Configuration::get('PS_SC_' . strtoupper($network)));
         }
@@ -231,6 +264,7 @@ class SocialSharing extends Module
                         'weight' => $product->weight,
                         'weight_unit' => Configuration::get('PS_WEIGHT_UNIT'),
                         'cover' => isset($product->id) ? Product::getCover((int)$product->id) : '',
+                        'coverImageType' => $this->getSelectedProductImageType(),
                         'link_rewrite' => isset($product->link_rewrite) && $product->link_rewrite ? $product->link_rewrite : '',
                     ]
                 );
@@ -324,7 +358,7 @@ class SocialSharing extends Module
                 [
                     'sharing_name' => addcslashes($product->name, "'"),
                     'sharing_url' => addcslashes($this->context->link->getProductLink($product), "'"),
-                    'sharing_img' => addcslashes($this->context->link->getImageLink($product->link_rewrite, $imageCoverId), "'"),
+                    'sharing_img' => addcslashes($this->context->link->getImageLink($product->link_rewrite, $imageCoverId, $this->getSelectedProductImageType()), "'"),
                 ]
             );
         }
@@ -413,5 +447,27 @@ class SocialSharing extends Module
     public function hookActionObjectProductDeleteAfter($params)
     {
         return $this->clearProductHeaderCache($params['object']->id);
+    }
+
+    /**
+     * Returns selected product image type
+     *
+     * @return string
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function getSelectedProductImageType()
+    {
+        $imageTypes = [];
+        foreach (ImageType::getImagesTypes('products', true) as $imageType) {
+            $imageTypes[] = $imageType['name'];
+        }
+
+        $value = Configuration::get(static::PRODUCT_IMAGE_TYPE_CONFIG_KEY);
+        if (!$value || !in_array($value, $imageTypes)) {
+            $value = array_shift($imageTypes);
+            Configuration::updateValue(static::PRODUCT_IMAGE_TYPE_CONFIG_KEY, $value);
+        }
+        return $value;
     }
 }
