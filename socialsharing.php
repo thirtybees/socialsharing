@@ -127,7 +127,7 @@ class SocialSharing extends Module
     {
         if (Tools::isSubmit('submitSocialSharing')) {
             foreach (self::$networks as $network) {
-                Configuration::updateValue('PS_SC_' . Tools::strtoupper($network), (int)Tools::getValue('PS_SC_' . Tools::strtoupper($network)));
+                Configuration::updateValue('PS_SC_' . strtoupper($network), (int)Tools::getValue('PS_SC_' . strtoupper($network)));
             }
             $this->html .= $this->displayConfirmation($this->l('Settings updated'));
             Tools::clearCache(Context::getContext()->smarty, $this->getTemplatePath('socialsharing.tpl'));
@@ -147,15 +147,15 @@ class SocialSharing extends Module
             $fields[] = [
                 'type' => 'switch',
                 'label' => $network,
-                'name' => 'PS_SC_' . Tools::strtoupper($network),
+                'name' => 'PS_SC_' . strtoupper($network),
                 'values' => [
                     [
-                        'id' => Tools::strtolower($network) . '_active_on',
+                        'id' => strtolower($network) . '_active_on',
                         'value' => 1,
                         'label' => $this->l('Enabled'),
                     ],
                     [
-                        'id' => Tools::strtolower($network) . '_active_off',
+                        'id' => strtolower($network) . '_active_off',
                         'value' => 0,
                         'label' => $this->l('Disabled'),
                     ],
@@ -187,7 +187,7 @@ class SocialSharing extends Module
     {
         $values = [];
         foreach (self::$networks as $network) {
-            $values['PS_SC_' . Tools::strtoupper($network)] = (int)Tools::getValue('PS_SC_' . Tools::strtoupper($network), Configuration::get('PS_SC_' . Tools::strtoupper($network)));
+            $values['PS_SC_' . strtoupper($network)] = (int)Tools::getValue('PS_SC_' . strtoupper($network), Configuration::get('PS_SC_' . strtoupper($network)));
         }
 
         return $values;
