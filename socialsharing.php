@@ -273,10 +273,7 @@ class SocialSharing extends Module
                     return '';
                 }
                 if (!$this->isCached('socialsharing_header.tpl', $this->getCacheId('socialsharing_header|' . (isset($product->id) && $product->id ? (int)$product->id : '')))) {
-                    $decimals = 0;
-                    if ($this->context->currency->decimals) {
-                        $decimals = Configuration::get('PS_PRICE_DISPLAY_PRECISION');
-                    }
+                    $decimals = $this->getCurrencyDisplayPrecision($this->context->currency);
 
                     $this->context->smarty->assign(
                         [
@@ -509,5 +506,22 @@ class SocialSharing extends Module
             Configuration::updateValue(static::CONFIG_KEY_DISPLAY_OPEN_GRAPH_TAGS, $value);
         }
         return (bool)$value;
+    }
+
+    /**
+     * @param Currency $currency
+     *
+     * @return int
+     * @throws PrestaShopException
+     */
+    protected function getCurrencyDisplayPrecision($currency)
+    {
+        if (method_exists($currency, 'getDisplayPrecision')) {
+            return $currency->getDisplayPrecision();
+        }
+        if ($currency->decimals) {
+            return (int)Configuration::get('PS_PRICE_DISPLAY_PRECISION');
+        }
+        return 0;
     }
 }
